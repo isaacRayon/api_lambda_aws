@@ -1,0 +1,166 @@
+AWSTemplateFormatVersion: 2010-09-09
+Transform: AWS::Serverless-2016-10-31
+Description: 'Blau API GPS
+
+  '
+Globals:
+  Function:
+    Timeout: 200
+    MemorySize: 128
+Parameters:
+  EnvStageName:
+    Type: String
+    Default: dev
+    Description: The Environment name (e.g. dev, prod, etc.)
+  Region:
+    Type: String
+    Default: us-east-2
+    Description: The region to deploy the code to
+  CoreCommonResourcesStack:
+    Type: String
+    Default: core-common-resources
+    Description: The name of the core common stack that contains the resources required
+      for reuse
+  LambdaRoleName:
+    Type: String
+    Default: CoreLambdaRole
+    Description: The default role name given to apply to the functions
+  GlueRoleName:
+    Type: String
+    Default: CoreGlueRole
+    Description: The default role name given to apply to glue jobs
+  DefaultSecurityGroupsName:
+    Type: String
+    Default: AppSecurityGroups
+    Description: The logical name of the security groups that will be given to the
+      resources
+  DefaultSubnetsName:
+    Type: String
+    Default: AppSubnets
+    Description: The logical name of the subnets that will be given to the resources
+Resources:
+  ApiGatewayApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      Name:
+        Fn::Sub: ${AWS::StackName}-APIGateway-${EnvStageName}
+      StageName:
+        Ref: EnvStageName
+    Metadata:
+      SamResourceId: ApiGatewayApi
+  DbQueryFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Timeout: 900
+      PackageType: Zip
+      CodeUri: s3://blau-ds/9a7aae97c8bfff953e4bb4a416394d88
+      Handler: app.lambda_handler
+      Runtime: python3.9
+      FunctionName:
+        Fn::Sub: ${AWS::StackName}-Dbquery-${EnvStageName}
+      Role:
+        Fn::ImportValue:
+          Fn::Join:
+          - '-'
+          - - Ref: CoreCommonResourcesStack
+            - Ref: LambdaRoleName
+            - Ref: EnvStageName
+            - Arn
+      VpcConfig:
+        SecurityGroupIds:
+          Fn::Split:
+          - ','
+          - Fn::ImportValue:
+              Fn::Join:
+              - '-'
+              - - Ref: CoreCommonResourcesStack
+                - Ref: DefaultSecurityGroupsName
+                - Ref: EnvStageName
+        SubnetIds:
+          Fn::Split:
+          - ','
+          - Fn::ImportValue:
+              Fn::Join:
+              - '-'
+              - - Ref: CoreCommonResourcesStack
+                - Ref: DefaultSubnetsName
+                - Ref: EnvStageName
+    Metadata:
+      SamResourceId: DbQueryFunction
+  GetSecretsTestFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: s3://blau-ds/d41d8cd98f00b204e9800998ecf8427e
+      Handler: app.lambda_handler
+      Runtime: python3.9
+      FunctionName:
+        Fn::Sub: ${AWS::StackName}-GetSecretsTest-${EnvStageName}
+      Role:
+        Fn::ImportValue:
+          Fn::Join:
+          - '-'
+          - - Ref: CoreCommonResourcesStack
+            - Ref: LambdaRoleName
+            - Ref: EnvStageName
+            - Arn
+      VpcConfig:
+        SecurityGroupIds:
+          Fn::Split:
+          - ','
+          - Fn::ImportValue:
+              Fn::Join:
+              - '-'
+              - - Ref: CoreCommonResourcesStack
+                - Ref: DefaultSecurityGroupsName
+                - Ref: EnvStageName
+        SubnetIds:
+          Fn::Split:
+          - ','
+          - Fn::ImportValue:
+              Fn::Join:
+              - '-'
+              - - Ref: CoreCommonResourcesStack
+                - Ref: DefaultSubnetsName
+                - Ref: EnvStageName
+      Environment:
+        Variables:
+          TEST_SECRET_NAME: test-secret
+    Metadata:
+      SamResourceId: GetSecretsTestFunction
+  S3DumpTestFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: s3://blau-ds/d41d8cd98f00b204e9800998ecf8427e
+      Handler: app.lambda_handler
+      Runtime: python3.9
+      FunctionName:
+        Fn::Sub: ${AWS::StackName}-S3DumpTest-${EnvStageName}
+      Role:
+        Fn::ImportValue:
+          Fn::Join:
+          - '-'
+          - - Ref: CoreCommonResourcesStack
+            - Ref: LambdaRoleName
+            - Ref: EnvStageName
+            - Arn
+      VpcConfig:
+        SecurityGroupIds:
+          Fn::Split:
+          - ','
+          - Fn::ImportValue:
+              Fn::Join:
+              - '-'
+              - - Ref: CoreCommonResourcesStack
+                - Ref: DefaultSecurityGroupsName
+                - Ref: EnvStageName
+        SubnetIds:
+          Fn::Split:
+          - ','
+          - Fn::ImportValue:
+              Fn::Join:
+              - '-'
+              - - Ref: CoreCommonResourcesStack
+                - Ref: DefaultSubnetsName
+                - Ref: EnvStageName
+    Metadata:
+      SamResourceId: S3DumpTestFunction

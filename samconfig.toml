@@ -1,0 +1,13 @@
+version = 0.1
+[default]
+[default.deploy]
+[default.deploy.parameters]
+stack_name = "blauaws"
+s3_bucket = "aws-sam-cli-managed-default-samclisourcebucket-g27r1vmtirt9"
+s3_prefix = "blauaws"
+region = "us-east-2"
+confirm_changeset = true
+capabilities = "CAPABILITY_IAM"
+disable_rollback = true
+parameter_overrides = "EnvStageName=\"dev\" Region=\"us-east-2\" CoreCommonResourcesStack=\"core-common-resources\" LambdaRoleName=\"CoreLambdaRole\" GlueRoleName=\"CoreGlueRole\" DefaultSecurityGroupsName=\"AppSecurityGroups\" DefaultSubnetsName=\"AppSubnets\""
+image_repositories = []
